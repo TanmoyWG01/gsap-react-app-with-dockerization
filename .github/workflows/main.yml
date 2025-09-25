@@ -24,14 +24,11 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-          cache-dependency-path: client/pnpm-lock.yaml   # 👈 tell it where the lockfile is
+          cache-dependency-path: client/pnpm-lock.yaml
 
-      # Step 3: Setup pnpm
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
+      # Step 3: Install pnpm (this fixes "pnpm not found")
+      - name: Install pnpm
+        run: npm install -g pnpm@9
 
       # Step 4: Install dependencies
       - name: Install dependencies
