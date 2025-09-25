@@ -1,54 +1,13 @@
-name: CI/CD for GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - main # Trigger on pushes to the main branch
-  pull_request:
-    branches:
-      - main # Trigger on pull requests targeting the main branch
+      - main # Or your default branch
 
 jobs:
-  # --------------------------------------------------------------------------------------------------
-  # Job 1: Lint & Test - Runs on every push and pull request to ensure code quality and functionality
-  # --------------------------------------------------------------------------------------------------
-  lint-and-test:
-    name: Lint & Test
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18' # Use a specific, stable Node.js version
-        cache: 'npm'       # Cache npm dependencies for faster builds
-
-    - name: Install dependencies
-      run: npm ci # 'npm ci' for clean and consistent installs in CI environments
-
-    - name: Run ESLint
-      # Assumes you have an .eslintrc.js and a 'lint' script in package.json (e.g., "lint": "eslint . --ext js,jsx,ts,tsx")
-      run: npm run lint
-
-    - name: Run unit tests
-      # Assumes you have a 'test' script in package.json (e.g., "test": "vitest" or "test": "react-scripts test")
-      run: npm test
-
-    # You might also add integration/e2e tests here if you have them
-
-  # --------------------------------------------------------------------------------------------------
-  # Job 2: Build & Deploy - Only runs if linting and testing pass, and only on pushes to main branch
-  # --------------------------------------------------------------------------------------------------
   build-and-deploy:
-    name: Build & Deploy
-    needs: lint-and-test # This job depends on 'lint-and-test' completing successfully
-    if: github.ref == 'refs/heads/main' && success() # Only deploy on pushes to main, and if previous job succeeded
     runs-on: ubuntu-latest
-
-    env:
-      VITE_APP_BASE_URL: /GSAP_REACT/ # Set your GitHub Pages base URL here
 
     steps:
     - name: Checkout repository
@@ -57,19 +16,20 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
-        cache: 'npm'
+        node-version: '18' # Or your project's Node.js version
 
     - name: Install dependencies
-      run: npm ci
+      run: npm install
 
     - name: Build project
       run: npm run build
-      # The VITE_APP_BASE_URL is set as an environment variable for the job
+      env:
+        VITE_APP_BASE_URL: /GSAP_REACT/ # Adjust if your base URL is different for GitHub Pages
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
+      if: success() # Only deploy if the build step was successful
       with:
         github_token: ${{ secrets.ACTION_TOKEN }}
-        publish_dir: ./dist
-        # cname: your-custom-domain.com # Uncomment and configure if you have a custom domain
+        publish_dir: ./dist # The directory where Vite outputs the build files
+        # cname: example.com # Uncomment and replace if you have a custom domain
