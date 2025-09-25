@@ -1,45 +1,72 @@
-name: CI/CD - Vite React GSAP
+name: Build and Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
+  # Build and Deploy job
   build-and-deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
-      # Step 1: Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js (use stable v22)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: 'npm'
+          node-version: '20.x'
 
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: npm ci
-
-      # Step 4: Run lint
-      - name: Run ESLint
-        run: npm run lint --if-present
-
-      # Step 5: Build project
-      - name: Build project
-        run: npm run build
-
-      # Step 6: Deploy to GitHub Pages (only if build succeeds)
-      - name: Deploy to GitHub Pages
-        if: success()
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          github_token: ${{ secrets.ACTION_TOKEN }}
-          publish_dir: ./dist
-          publish_branch: gh-pages
-          force_orphan: true
+          version: 8
+
+      - name: Install dependencies
+        run: |
+          cd client
+          if [ -f "pnpm-lock.yaml" ]; then
+            echo "Found pnpm-lock.yaml, installing with --no-frozen-lockfile"
+            pnpm install --no-frozen-lockfile
+          else
+            echo "No pnpm-lock.yaml found, installing normally"
+            pnpm install
+          fi
+
+      - name: Build application
+        run: |
+          cd client
+          pnpm run build
+        env:
+          NODE_ENV: production
+          CI: true
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        with:
+          enablement: true
+          token: ${{ secrets.ACTION_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './client/dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          token: ${{ secrets.ACTION_TOKEN }}
