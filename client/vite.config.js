@@ -6,4 +6,5 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: "/gsap-react-app-with-dockerization/",
+  publicDir: "public",
 });
