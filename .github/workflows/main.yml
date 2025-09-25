@@ -1,35 +1,49 @@
-name: Deploy to GitHub Pages
+name: CI/CD - Vite React GSAP
 
 on:
   push:
     branches:
-      - main # Or your default branch
+      - main
+  pull_request:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # Step 1: Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18' # Or your project's Node.js version
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23.0.9
+          cache: 'pnpm'
 
-    - name: Install dependencies
-      run: npm install
+      # Step 3: Install pnpm
+      - name: Install pnpm
+        run: npm install -g pnpm
 
-    - name: Build project
-      run: npm run build
-      env:
-        VITE_APP_BASE_URL: /GSAP_REACT/ # Adjust if your base URL is different for GitHub Pages
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      if: success() # Only deploy if the build step was successful
-      with:
-        github_token: ${{ secrets.ACTION_TOKEN }}
-        publish_dir: ./dist # The directory where Vite outputs the build files
-        # cname: example.com # Uncomment and replace if you have a custom domain
+      # Step 5: Run lint (good practice before build)
+      - name: Run ESLint
+        run: pnpm exec eslint . --ext .jsx,.js --max-warnings=0
+
+      # Step 6: Run build
+      - name: Build project
+        run: pnpm run build
+
+      # Step 7: Deploy to GitHub Pages (only if build succeeds)
+      - name: Deploy to GitHub Pages
+        if: success()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.ACTION_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true
