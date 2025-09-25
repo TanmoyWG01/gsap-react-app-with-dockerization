@@ -1,0 +1,20 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Dependencies (at the project root)
+node_modules
+
+# Build output (at the project root)
+dist
+build
+
+# PNPM debug log
+pnpm-debug.log
+
+# IDE / Editor specific
+.vscode
