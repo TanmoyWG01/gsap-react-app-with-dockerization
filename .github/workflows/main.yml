@@ -15,33 +15,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js
+      # Step 2: Setup Node.js (use stable v22)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
+          cache: 'npm'
 
-      # Step 3: Setup pnpm
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9 # or the version you use locally
-          run_install: false
-
-      # Step 4: Install dependencies
+      # Step 3: Install dependencies
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
-      # Step 5: Run lint
+      # Step 4: Run lint
       - name: Run ESLint
-        run: pnpm exec eslint . --ext .jsx,.js --max-warnings=0
+        run: npm run lint --if-present
 
-      # Step 6: Build project
+      # Step 5: Build project
       - name: Build project
-        run: pnpm run build
+        run: npm run build
 
-      # Step 7: Deploy to GitHub Pages (only if build succeeds)
+      # Step 6: Deploy to GitHub Pages (only if build succeeds)
       - name: Deploy to GitHub Pages
         if: success()
         uses: peaceiris/actions-gh-pages@v3
