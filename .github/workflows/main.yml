@@ -22,19 +22,22 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
-      # Step 3: Install pnpm
-      - name: Install pnpm
-        run: npm install -g pnpm
+      # Step 3: Setup pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9 # or the version you use locally
+          run_install: false
 
       # Step 4: Install dependencies
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Step 5: Run lint (good practice before build)
+      # Step 5: Run lint
       - name: Run ESLint
         run: pnpm exec eslint . --ext .jsx,.js --max-warnings=0
 
-      # Step 6: Run build
+      # Step 6: Build project
       - name: Build project
         run: pnpm run build
 
