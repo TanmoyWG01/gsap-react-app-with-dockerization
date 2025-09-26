@@ -18,7 +18,7 @@ const Manu = () => {
         xPercent: 0,
         opacity: 1,
         duration: 1,
-        ease: "power1.inOut",
+        ease: "power1.inOut", //dkfgjndsj
       }
     );
 
